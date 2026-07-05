@@ -1,1 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HR Agent v2 — Atoms Digital Solutions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
 
+  #app {
+    width: 100%;
+    max-width: 680px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: #1a56db;
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header .avatar {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .header .info h1 { font-size: 15px; font-weight: 600; }
+  .header .info p  { font-size: 12px; opacity: 0.8; }
+  .header .status  { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+  .header .dot     { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* VERSION TABS */
+  .version-tabs {
+    display: flex;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .vtab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+  .vtab.active {
+    color: #1a56db;
+    border-bottom-color: #1a56db;
+    background: #fff;
+    font-weight: 600;
+  }
+  .vtab:hover:not(.active) { background: #f1f5f9; color: #334155; }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ========================
+     VERSION 1 — CHATBOT
+  ======================== */
+  #v1-messages {
+    height: 420px;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f8fafc;
+  }
+  #v1-messages::-webkit-scrollbar { width: 4px; }
+  #v1-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+  .msg { display: flex; flex-direction: column; max-width: 80%; gap: 4px; }
+  .msg.agent { align-self: flex-start; }
+  .msg.user  { align-self: flex-end; }
+  .bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+  .msg.agent .bubble { background: #fff; color: #1e293b; border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+  .msg.user  .bubble { background: #1a56db; color: #fff; border-bottom-right-radius: 4px; }
+  .msg-time { font-size: 11px; color: #94a3b8; }
+  .msg.user .msg-time { text-align: right; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-width: 420px; }
+  .chip { padding: 6px 14px; border: 1.5px solid #cbd5e1; border-radius: 20px; font-size: 13px; cursor: pointer; background: #fff; color: #334155; transition: all 0.15s; white-space: nowrap; }
+  .chip:hover { background: #1a56db; color: #fff; border-color: #1a56db; }
+
+  .typing-row { display: flex; align-self: flex-start; }
+  .typing-bubble { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; border-bottom-left-radius: 4px; padding: 12px 16px; display: flex; gap: 5px; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .typing-bubble span { width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; animation: bounce 1.2s infinite; }
+  .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-4px);opacity:1} }
+
+  .v1-input {
+    padding: 12px 14px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 8px;
+    background: #fff;
+  }
+  .v1-input input {
+    flex: 1; font-size: 14px; padding: 10px 14px;
+    border: 1.5px solid #cbd5e1; border-radius: 24px;
+    outline: none; color: #1e293b; background: #f8fafc;
+    transition: border-color 0.15s;
+  }
+  .v1-input input:focus { border-color: #1a56db; background: #fff; }
+  .v1-input button {
+    width: 42px; height: 42px; border: none; border-radius: 50%;
+    background: #1a56db; color: #fff; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .v1-input button:hover { background: #1447c0; }
+
+  /* ========================
+     VERSION 2 — FORM SLIDES
+  ======================== */
+  #v2-panel { padding: 0; }
+
+  /* Slide progress */
+  .slide-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px 0;
+  }
+  .slide-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+  .step-circle {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    background: #e2e8f0; color: #94a3b8;
+    transition: all 0.2s;
+  }
+  .step-circle.active { background: #1a56db; color: #fff; }
+  .step-circle.done   { background: #22c55e; color: #fff; }
+  .step-label { font-size: 12px; color: #64748b; font-weight: 500; }
+  .step-label.active { color: #1a56db; font-weight: 600; }
+  .step-divider { flex: 1; height: 2px; background: #e2e8f0; border-radius: 2px; }
+  .step-divider.done { background: #22c55e; }
+
+  /* Slides container */
+  .slides-wrap { overflow: hidden; }
+  .slides { display: flex; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+  .slide { min-width: 100%; padding: 20px 24px; }
+
+  /* Form elements */
+  .slide-title {
+    font-size: 15px; font-weight: 700; color: #1e293b;
+    margin-bottom: 4px;
+  }
+  .slide-sub {
+    font-size: 12px; color: #64748b; margin-bottom: 18px;
+  }
+  .saved-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    color: #166534; font-size: 11px; font-weight: 600;
+    padding: 2px 10px; border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label {
+    font-size: 11px; font-weight: 600; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: #1e293b;
+    font-size: 13px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: #1a56db; background: #fff; }
+  .form-group select option { background: #fff; }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+  .dynamic-fields { margin-top: 14px; }
+  .dynamic-fields .section-label {
+    font-size: 11px; font-weight: 700; color: #1a56db;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #dbeafe;
+  }
+
+  /* Slide nav */
+  .slide-nav {
+    display: flex;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+  .btn-back {
+    padding: 10px 20px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-back:hover { background: #f1f5f9; }
+  .btn-next {
+    flex: 1;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #1a56db;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-next:hover { background: #1447c0; }
+  .btn-next:disabled { background: #93c5fd; cursor: not-allowed; }
+
+  /* SUCCESS / ERROR */
+  .success-bubble { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #166534; line-height: 1.6; }
+  .error-bubble   { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #991b1b; }
+
+  /* SPINNER */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* MODAL */
+  #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  #modal-overlay.show { display: flex; }
+  #modal-box { background: #fff; border-radius: 14px; width: 100%; max-width: 600px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  #modal-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
+  #modal-header h2 { font-size: 15px; font-weight: 600; color: #1e293b; flex: 1; }
+  #modal-close { background: none; border: none; cursor: pointer; font-size: 20px; color: #94a3b8; }
+  #modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .preview-section { margin-bottom: 16px; }
+  .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .preview-value { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #1e293b; line-height: 1.6; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
+  #modal-footer { padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end; background: #f8fafc; }
+  .btn-cancel { padding: 9px 18px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; color: #64748b; font-size: 13px; cursor: pointer; }
+  .btn-confirm { padding: 9px 22px; border: none; border-radius: 8px; background: #1a56db; color: #fff; font-size: 13px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .btn-confirm:disabled { background: #93c5fd; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="avatar">🤖</div>
+    <div class="info">
+      <h1>HR Agent</h1>
+      <p>Atoms Digital Solutions Pvt. Ltd.</p>
+    </div>
+    <div class="status"><div class="dot"></div>Online</div>
+  </div>
+
+  <!-- VERSION TABS -->
+  <div class="version-tabs">
+    <button class="vtab active" onclick="switchVersion(1)">💬 Version 1 — Chat</button>
+    <button class="vtab" onclick="switchVersion(2)">📋 Version 2 — Form</button>
+    <button class="vtab" onclick="switchVersion(3)">⚡ Version 3 — Quick</button>
+  </div>
+
+  <!-- ===================== VERSION 1 ===================== -->
+  <div id="v1-panel" class="panel active">
+    <div id="v1-messages"></div>
+    <div class="v1-input">
+      <input id="v1-input" type="text" placeholder="Type your reply here..." autocomplete="off" />
+      <button onclick="v1Send()">&#10148;</button>
+    </div>
+  </div>
+
+  <!-- ===================== VERSION 2 ===================== -->
+  <div id="v2-panel" class="panel">
+
+    <!-- Step progress -->
+    <div class="slide-progress">
+      <div class="slide-step">
+        <div class="step-circle active" id="step1-circle">1</div>
+        <span class="step-label active" id="step1-label">Sender Details</span>
+      </div>
+      <div class="step-divider" id="step-div"></div>
+      <div class="slide-step">
+        <div class="step-circle" id="step2-circle">2</div>
+        <span class="step-label" id="step2-label">Employee Details</span>
+      </div>
+    </div>
+
+    <!-- Slides -->
+    <div class="slides-wrap">
+      <div class="slides" id="slides">
+
+        <!-- SLIDE 1: Sender Details -->
+        <div class="slide" id="slide1">
+          <div class="slide-title">Sender Details</div>
+          <div class="slide-sub">These details will appear on all letters. Fill once and save!</div>
+          <div id="sender-saved-badge" style="display:none;">
+            <span class="saved-badge">✓ Saved — click Next to continue</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Your Name</label>
+              <input id="s_hr_name" type="text" placeholder="Sowmya Uggirala" />
+            </div>
+            <div class="form-group">
+              <label>Your Designation</label>
+              <input id="s_designation" type="text" placeholder="HR Associative" />
+            </div>
+          </div>
+          <div class="form-grid full" style="margin-top:12px;">
+            <div class="form-group">
+              <label>CC Email (optional)</label>
+              <input id="s_cc" type="email" placeholder="manager@atomsdigital.com" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2: Employee Details -->
+        <div class="slide" id="slide2">
+          <div class="slide-title">Employee Details</div>
+          <div class="slide-sub">Select letter type — required fields will appear automatically.</div>
+
+          <div class="form-grid full">
+            <div class="form-group">
+              <label>Letter Type</label>
+              <select id="e_letter_type" onchange="onLetterTypeChange()">
+                <option value="">— Select Letter Type —</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Fixed fields always shown -->
+          <div class="form-grid" style="margin-top:12px;">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input id="e_full_name" type="text" placeholder="Lavanya Reddy" />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input id="e_email" type="email" placeholder="lavanya@email.com" />
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div class="form-group">
+              <label>Role</label>
+              <select id="e_role">
+                <option value="">— Select Role —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input id="e_start_date" type="date" />
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div class="form-group">
+              <label>End Date</label>
+              <input id="e_end_date" type="date" />
+            </div>
+            <div class="form-group">
+              <label>Letter Date</label>
+              <input id="e_date" type="date" />
+            </div>
+          </div>
+
+          <!-- Dynamic fields based on letter type -->
+          <div class="dynamic-fields" id="dynamic-fields"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Nav buttons -->
+    <div class="slide-nav" id="slide-nav">
+      <button class="btn-back" id="btn-back" onclick="slideBack()" style="display:none;">Back</button>
+      <button class="btn-next" id="btn-next" onclick="slideNext()">
+        <span id="btn-next-label">Save & Continue</span>
+      </button>
+    </div>
+
+  </div><!-- end v2-panel -->
+
+  <!-- ===================== VERSION 3 — QUICK BOT ===================== -->
+  <div id="v3-panel" class="panel">
+    <div id="v3-messages" style="height:420px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#f8fafc;"></div>
+    <div class="v1-input">
+      <textarea id="v3-input" placeholder="Type your reply here..." autocomplete="off" rows="1"
+        style="flex:1;font-size:14px;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:18px;outline:none;color:#1e293b;background:#f8fafc;resize:none;max-height:120px;font-family:'Segoe UI',Arial,sans-serif;"
+        onkeydown="v3HandleKey(event)" oninput="v3AutoResize(this)"></textarea>
+      <button onclick="v3Send()">&#10148;</button>
+    </div>
+  </div>
+
+</div><!-- end app -->
+
+<!-- PREVIEW MODAL -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-header">
+      <span style="font-size:20px;">📄</span>
+      <h2>Letter Preview</h2>
+      <button id="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body">
+      <div class="preview-section"><div class="preview-label">Recipient</div><div class="preview-value" id="prev-recipient"></div></div>
+      <div class="preview-section"><div class="preview-label">Subject</div><div class="preview-value" id="prev-subject"></div></div>
+      <div class="preview-section"><div class="preview-label">Email Body</div><div class="preview-value" id="prev-emailbody"></div></div>
+      <div class="preview-section"><div class="preview-label">Letter Content</div><div class="preview-value" id="prev-letter"></div></div>
+    </div>
+    <div id="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Edit</button>
+      <button class="btn-confirm" id="confirm-btn" onclick="confirmSend()">
+        <span id="confirm-label">Confirm & Send</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SHARED STATE
+// ============================================================
+let shared = {
+  letterTypes: [],
+  roles: [],
+  senderDetails: JSON.parse(localStorage.getItem('hrSenderDetails') || 'null')
+};
+
+// Field definitions per letter type — detected from placeholders
+const LETTER_FIELDS = {
+  'Offer Letter':                  ['Employment Type','Mode','Compensation','Tenure'],
+  'Offer Letter with Probation':   ['Employment Type','Mode','Compensation','Tenure','Probation Period','Salary Hike After Probation','Present Salary','Final Salary'],
+  'Internship Offer Letter':       ['Tenure','End Date','Mode','Employment Type'],
+  'Experience Letter':             ['End Date','Department Name'],
+  'Reliving Letter':               ['End Date','Department Name'],
+  'Termination Letter':            ['End Date','Reason 1','Reason 2'],
+  'Certification of Appreciation': ['End Date'],
+  'Certification of Completion':   ['End Date'],
+  'Best Employee of the Month':    ['Month','Year'],
+  'Best Employee of the Year':     ['Year'],
+};
+
+const FIELD_CONFIG = {
+  'Start Date':                  { label: 'Start Date',                    type: 'date' },
+  'End Date':                    { label: 'End Date',                      type: 'date' },
+  'Employment Type':             { label: 'Employment Type',               type: 'select', options: ['Full-Time','Internship'] },
+  'Month': { label: 'Month', type: 'text', placeholder: 'e.g., June' },
+  'Year':  { label: 'Year',  type: 'text', placeholder: 'e.g., 2026' },
+  'Mode':                        { label: 'Work Mode',                     type: 'select', options: ['Work from Home','Work from Office'] },
+  'Compensation':                { label: 'Compensation (INR)',            type: 'text',   placeholder: '10,000 per month' },
+  'Tenure':                      { label: 'Tenure / Duration',             type: 'text',   placeholder: '3 months' },
+  
+  'Department Name':             { label: 'Department',                    type: 'text',   placeholder: 'Technology' },
+  'Reason 1':                    { label: 'Reason 1',                      type: 'text',   placeholder: 'Performance issues' },
+  'Reason 2':                    { label: 'Reason 2',                      type: 'text',   placeholder: 'Attendance issues' },
+  'Salary Hike After Probation': { label: 'Salary Hike After Probation?',  type: 'select', options: ['Yes','No'] },
+  'Probation Period':            { label: 'Probation Period Duration',       type: 'text',   placeholder: 'e.g., 2 months' },
+  'Present Salary':              { label: 'Present Salary (INR)',            type: 'text',   placeholder: '10,000 per month' },
+  'Final Salary':                { label: 'Final Salary After Hike (INR)',   type: 'text',   placeholder: '15,000 per month' },
+
+};
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = function() {
+  // Load dropdown data
+  callBackend('getLetterTypes', {}).then(function(r) {
+    shared.letterTypes = r.data || [];
+    const sel = document.getElementById('e_letter_type');
+    shared.letterTypes.forEach(function(lt) {
+      const opt = document.createElement('option');
+      opt.value = lt; opt.textContent = lt;
+      sel.appendChild(opt);
+    });
+    // Also init v1
+    v1Init();
+  }).catch(function(e) {
+    v1Init();
+  });
+
+  callBackend('getRoles', {}).then(function(r) {
+    shared.roles = r.data || [];
+    const sel = document.getElementById('e_role');
+    shared.roles.forEach(function(role) {
+      const opt = document.createElement('option');
+      opt.value = role; opt.textContent = role;
+      sel.appendChild(opt);
+    });
+    // Also update v1 roles
+    v1State.roles = shared.roles;
+  });
+
+  // Set today's date
+  document.getElementById('e_date').value = new Date().toISOString().split('T')[0];
+
+  // Restore sender details if saved
+  if (shared.senderDetails) {
+    document.getElementById('s_hr_name').value = shared.senderDetails.hr_name || '';
+    document.getElementById('s_designation').value = shared.senderDetails.designation || '';
+    document.getElementById('s_cc').value = shared.senderDetails.cc || '';
+    document.getElementById('sender-saved-badge').style.display = 'block';
+  }
+};
+
+// ============================================================
+// VERSION SWITCHER
+// ============================================================
+function switchVersion(v) {
+  currentVersion = v;
+  document.querySelectorAll('.vtab').forEach(function(t,i) {
+    t.classList.toggle('active', i === v-1);
+  });
+  document.getElementById('v1-panel').classList.toggle('active', v === 1);
+  document.getElementById('v2-panel').classList.toggle('active', v === 2);
+  document.getElementById('v3-panel').classList.toggle('active', v === 3);
+  if (v === 3 && !v3State.initialized) v3Init();
+}
+
+// ============================================================
+// VERSION 2 — SLIDES
+// ============================================================
+let currentSlide = 1;
+
+function goToSlide(n) {
+  currentSlide = n;
+  document.getElementById('slides').style.transform = 'translateX(-' + (n-1)*100 + '%)';
+
+  // Update progress
+  document.getElementById('step1-circle').className = 'step-circle ' + (n > 1 ? 'done' : 'active');
+  document.getElementById('step1-label').className  = 'step-label '  + (n > 1 ? '' : 'active');
+  document.getElementById('step2-circle').className = 'step-circle ' + (n === 2 ? 'active' : '');
+  document.getElementById('step2-label').className  = 'step-label '  + (n === 2 ? 'active' : '');
+  document.getElementById('step-div').className     = 'step-divider' + (n > 1 ? ' done' : '');
+
+  document.getElementById('btn-back').style.display = n > 1 ? 'block' : 'none';
+  document.getElementById('btn-next-label').textContent = n === 2 ? 'Preview & Send' : 'Save & Continue';
+}
+
+function slideNext() {
+  if (currentSlide === 1) {
+    // Save sender details
+    const hrName = document.getElementById('s_hr_name').value.trim();
+    const desig  = document.getElementById('s_designation').value.trim();
+    if (!hrName || !desig) {
+      alert('Please fill in Your Name and Designation.');
+      return;
+    }
+    shared.senderDetails = { hr_name: hrName, designation: desig, cc: document.getElementById('s_cc').value.trim() };
+    try { localStorage.setItem('hrSenderDetails', JSON.stringify(shared.senderDetails)); } catch(e) {}
+    document.getElementById('sender-saved-badge').style.display = 'block';
+    goToSlide(2);
+  } else if (currentSlide === 2) {
+    submitV2();
+  }
+}
+
+function slideBack() {
+  if (currentSlide > 1) goToSlide(currentSlide - 1);
+}
+
+function onLetterTypeChange() {
+  const lt = document.getElementById('e_letter_type').value;
+  renderDynamicFields(lt);
+}
+
+function renderDynamicFields(letterType) {
+  const container = document.getElementById('dynamic-fields');
+  container.innerHTML = '';
+  if (!letterType) return;
+
+  const fields = LETTER_FIELDS[letterType] || [];
+  if (!fields.length) return;
+
+  const label = document.createElement('div');
+  label.className = 'section-label';
+  label.textContent = 'Additional Fields for ' + letterType;
+  container.appendChild(label);
+
+  const grid = document.createElement('div');
+  grid.className = 'form-grid';
+  grid.id = 'dynamic-grid';
+
+  fields.forEach(function(fieldKey) {
+    // Present Salary and Final Salary — hidden initially, shown based on hike selection
+    if (fieldKey === 'Present Salary' || fieldKey === 'Final Salary') return;
+
+    const cfg = FIELD_CONFIG[fieldKey];
+    if (!cfg) return;
+
+    const grp = document.createElement('div');
+    grp.className = 'form-group';
+    grp.id = 'grp_' + fieldKey.replace(/\s/g,'_');
+
+    const lbl = document.createElement('label');
+    lbl.textContent = cfg.label;
+    grp.appendChild(lbl);
+
+    let inp;
+    if (cfg.type === 'select') {
+      inp = document.createElement('select');
+      inp.id = 'df_' + fieldKey.replace(/\s/g,'_');
+      const def = document.createElement('option');
+      def.value = ''; def.textContent = '— Select —';
+      inp.appendChild(def);
+      (cfg.options || []).forEach(function(opt) {
+        const o = document.createElement('option');
+        o.value = opt; o.textContent = opt;
+        inp.appendChild(o);
+      });
+      // Special handler for Salary Hike
+      if (fieldKey === 'Salary Hike After Probation') {
+        inp.onchange = function() { onSalaryHikeChange(this.value, grid); };
+      }
+    } else {
+      inp = document.createElement('input');
+      inp.type = cfg.type || 'text';
+      inp.id = 'df_' + fieldKey.replace(/\s/g,'_');
+      if (cfg.placeholder) inp.placeholder = cfg.placeholder;
+    }
+    grp.appendChild(inp);
+    grid.appendChild(grp);
+  });
+
+  container.appendChild(grid);
+}
+
+function onSalaryHikeChange(val, grid) {
+  // Remove existing salary fields if any
+  ['grp_Present_Salary','grp_Final_Salary','grp_salary_note'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  if (val === 'Yes') {
+    // Ask if increment is defined
+    const noteGrp = document.createElement('div');
+    noteGrp.className = 'form-group'; noteGrp.id = 'grp_salary_note';
+    noteGrp.style.gridColumn = '1 / -1';
+    noteGrp.innerHTML = '<label>Is Increment Salary Defined?</label><select id="df_increment_defined" onchange="onIncrementDefinedChange(this.value)"><option value="">— Select —</option><option value="Yes">Yes</option><option value="No">No</option></select>';
+    grid.appendChild(noteGrp);
+  }
+}
+
+function onIncrementDefinedChange(val) {
+  // Remove existing fields
+  ['grp_Present_Salary','grp_Final_Salary','grp_general_stmt'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  const grid = document.getElementById('dynamic-grid');
+
+  if (val === 'Yes') {
+    // Show Present Salary + Final Salary
+    ['Present Salary','Final Salary'].forEach(function(fieldKey) {
+      const cfg = FIELD_CONFIG[fieldKey];
+      const grp = document.createElement('div');
+      grp.className = 'form-group';
+      grp.id = 'grp_' + fieldKey.replace(/\s/g,'_');
+      grp.innerHTML = '<label>' + cfg.label + '</label><input type="text" id="df_' + fieldKey.replace(/\s/g,'_') + '" placeholder="' + cfg.placeholder + '" />';
+      grid.appendChild(grp);
+    });
+  } else if (val === 'No') {
+    // Show info message — general statement will be auto-added
+    const grp = document.createElement('div');
+    grp.className = 'form-group'; grp.id = 'grp_general_stmt';
+    grp.style.gridColumn = '1 / -1';
+    grp.innerHTML = '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:12px;color:#1e40af;">A general statement will be automatically added to the letter:<br><i>"Your salary will be reviewed and increased based on your performance during the probation period."</i></div>';
+    grid.appendChild(grp);
+  }
+}
+
+function collectV2FormData() {
+  const fmt = function(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  };
+  const fmtDate = function(id) {
+    const el = document.getElementById(id);
+    if (!el || !el.value) return '';
+    const d = new Date(el.value);
+    return isNaN(d) ? el.value : d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  };
+
+  const lt = fmt('e_letter_type');
+  const fields = LETTER_FIELDS[lt] || [];
+
+  const data = {
+    'Letter Type':   lt,
+    'Full Name':     fmt('e_full_name'),
+    'Email':         fmt('e_email'),
+    'Role':          fmt('e_role'),
+    'Start Date':    fmtDate('e_start_date'),
+    'End Date':      fmtDate('e_end_date'),
+    'Date':          fmtDate('e_date'),
+    'HR Name':       shared.senderDetails ? shared.senderDetails.hr_name : '',
+    'Designation':   shared.senderDetails ? shared.senderDetails.designation : '',
+    'CC':            shared.senderDetails ? shared.senderDetails.cc : '',
+  };
+
+  fields.forEach(function(fieldKey) {
+    if (fieldKey === 'Present Salary' || fieldKey === 'Final Salary') return; // handled separately
+    const id = 'df_' + fieldKey.replace(/\s/g,'_');
+    const el = document.getElementById(id);
+    if (!el) return;
+    data[fieldKey] = el.type === 'date' ? fmtDate(id) : el.value.trim();
+  });
+
+  // Salary Hike conditional logic
+  const hikeEl = document.getElementById('df_Salary_Hike_After_Probation');
+  if (hikeEl && hikeEl.value === 'Yes') {
+    const incrEl = document.getElementById('df_increment_defined');
+    if (incrEl && incrEl.value === 'Yes') {
+      data['Present Salary'] = fmt('df_Present_Salary');
+      data['Final Salary']   = fmt('df_Final_Salary');
+      data['Salary Hike Statement'] = 'After successful completion of the probation period, your salary will be revised from ' + data['Present Salary'] + ' to ' + data['Final Salary'] + '.';
+    } else if (incrEl && incrEl.value === 'No') {
+      data['Salary Hike Statement'] = 'Your salary will be reviewed and increased based on your performance during the probation period.';
+    }
+  }
+
+  return data;
+}
+
+function submitV2() {
+  const data = collectV2FormData();
+  if (!data['Full Name']) { alert('Please enter Full Name.'); return; }
+  if (!data['Email'] || !data['Email'].includes('@')) { alert('Please enter a valid Email.'); return; }
+  if (!data['Letter Type']) { alert('Please select a Letter Type.'); return; }
+
+  const btn = document.getElementById('btn-next');
+  btn.disabled = true;
+  document.getElementById('btn-next-label').innerHTML = '<span class="spinner"></span> Generating...';
+
+  callBackend('previewLetter', { formData: data })
+    .then(function(res) {
+      btn.disabled = false;
+      document.getElementById('btn-next-label').textContent = 'Preview & Send';
+      v2FormData = data;
+      showModal(res.data);
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      document.getElementById('btn-next-label').textContent = 'Preview & Send';
+      alert('Preview error: ' + err.message);
+    });
+}
+
+let v2FormData = {};
+
+// ============================================================
+// MODAL
+// ============================================================
+function showModal(data) {
+  document.getElementById('prev-recipient').textContent  = (data.recipientName||'') + '  <' + (data.recipientEmail||'') + '>';
+  document.getElementById('prev-subject').textContent    = data.subject || '(no subject)';
+  document.getElementById('prev-emailbody').textContent  = data.emailBody || '(empty)';
+  document.getElementById('prev-letter').textContent     = data.letterPreview || '(preview from Google Doc will appear after send)';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+function closeModalSilent() { document.getElementById('modal-overlay').classList.remove('show'); }
+
+function confirmSend() {
+  const btn = document.getElementById('confirm-btn');
+  const lbl = document.getElementById('confirm-label');
+  btn.disabled = true;
+  lbl.innerHTML = '<span class="spinner"></span> Sending...';
+
+  const data = currentVersion === 1 ? v1FormData : (currentVersion === 2 ? v2FormData : v3FormData);
+
+  callBackend('sendLetter', { formData: data })
+    .then(function() {
+      closeModalSilent();
+      btn.disabled = false;
+      lbl.textContent = 'Confirm & Send';
+      if (currentVersion === 2) {
+        document.getElementById('e_full_name').value = '';
+        document.getElementById('e_email').value = '';
+        document.getElementById('e_letter_type').value = '';
+        document.getElementById('e_role').value = '';
+        document.getElementById('dynamic-fields').innerHTML = '';
+        document.getElementById('e_date').value = new Date().toISOString().split('T')[0];
+        goToSlide(1);
+        alert('Letter sent successfully! PDF saved to Google Drive.');
+      }
+      if (currentVersion === 3) {
+        v3State.step = 'restart';
+        v3Say("Letter sent successfully!\n\nEmail delivered to: " + data['Email'] + "\nPDF saved to Google Drive → HR Letters/", ['Send another letter', "I'm done"], 'success');
+      }
+    })
+    .catch(function(err) {
+      closeModalSilent();
+      btn.disabled = false;
+      lbl.textContent = 'Confirm & Send';
+      alert('Failed to send: ' + err.message);
+    });
+}
+
+let currentVersion = 1;
+document.querySelectorAll('.vtab').forEach(function(t,i) {
+  t.addEventListener('click', function() { currentVersion = i+1; });
+});
+
+// ============================================================
+// VERSION 1 — CHATBOT
+// ============================================================
+let v1State = {
+  step: 'init',
+  formData: {},
+  letterTypes: [],
+  roles: [],
+  baseIndex: 0,
+  extraIndex: 0,
+  extraFields: []
+};
+let v1FormData = {};
+
+const V1_EXTRA_FIELDS = {
+  'Offer Letter': [
+    { key:'Compensation',    q:'Compensation offered? (e.g., 10,000/month)' },
+    { key:'Tenure',          q:'Commitment tenure? (e.g., 2 years)' },
+    { key:'Employment Type', q:'Employment type?', chips:['Full-Time'] },
+    { key:'Mode',            q:'Work mode?', chips:['Work from Home','Work from Office','Hybrid'] },
+  ],
+  'Offer Letter with Probation': [
+    { key:'Compensation',                q:'Compensation offered? (e.g., 10,000/month)' },
+    { key:'Tenure',                      q:'Commitment tenure? (e.g., 2 years)' },
+    { key:'Employment Type',             q:'Employment type?', chips:['Full-Time'] },
+    { key:'Mode',                        q:'Work mode?', chips:['Work from Home','Work from Office','Hybrid'] },
+    { key:'Probation Period',            q:'Probation period duration? (e.g., 2 months)' },
+    { key:'Salary Hike After Probation', q:'Salary Hike after Probation Period?', chips:['Yes','No'] },
+  ],
+  'Internship Offer Letter': [
+    { key:'Tenure',          q:'Internship duration? (e.g., 3 months)' },
+    { key:'End Date',        q:'Internship end date? (e.g., 31 Aug 2026)' },
+    { key:'Mode',            q:'Work mode?', chips:['Work from Home','Work from Office','Hybrid'] },
+    { key:'Employment Type', q:'Employment type?', chips:['Internship'] },
+  ],
+  'Experience Letter': [
+    { key:'End Date',        q:'Last working day? (e.g., 31 May 2026)' },
+    { key:'Department Name', q:'Which department did they work in?' },
+  ],
+  'Reliving Letter': [
+    { key:'End Date',        q:'Last working day? (e.g., 31 May 2026)' },
+    { key:'Department Name', q:'Which department?' },
+  ],
+  'Termination Letter': [
+    { key:'End Date',  q:'Termination effective date?' },
+    { key:'Reason 1', q:'Primary reason for termination?' },
+    { key:'Reason 2', q:'Additional reason? (or type "none")' },
+  ],
+  'Certification of Appreciation': [
+    { key:'End Date', q:'End date of recognition period? (e.g., 31 May 2026)' },
+  ],
+  'Certification of Completion': [
+    { key:'End Date', q:'Completion / end date? (e.g., 31 Aug 2026)' },
+  ],
+  'Best Employee of the Month': [
+    { key:'Month', q:'Which month? (e.g., June)' },
+    { key:'Year',  q:'Which year? (e.g., 2026)' },
+  ],
+  'Best Employee of the Year': [
+    { key:'Year', q:'Which year? (e.g., 2026)' },
+  ],
+};
+  
+
+const V1_BASE_FLOW = [
+  { key:'Full Name',       q:"Employee's full name?" },
+  { key:'Email',           q:"Employee's email address?" },
+  { key:'Department Name', q:"Which department?" },
+  { key:'Role',            q:"Their role? (select or type)", useRoles:true },
+  { key:'Start Date',      q:"Joining / start date? (e.g., 01 June 2026)" },
+  { key:'HR Name',         q:"Your name (HR officer)?" },
+  { key:'Designation',     q:"Your designation? (e.g., HR Associate)" },
+  { key:'Date',            q:"Letter date? (type 'today' for today)" },
+];
+
+function v1Now() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+
+function v1AddMsg(role, content, chips, special) {
+  const ms = document.getElementById('v1-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + role;
+  let inner = '';
+  if (special === 'success') inner = '<div class="success-bubble">' + content.replace(/\n/g,'<br>') + '</div>';
+  else if (special === 'error') inner = '<div class="error-bubble">' + content.replace(/\n/g,'<br>') + '</div>';
+  else inner = '<div class="bubble">' + content.replace(/\n/g,'<br>') + '</div>';
+  inner += '<div class="msg-time">' + v1Now() + '</div>';
+  wrap.innerHTML = inner;
+  if (chips && chips.length) {
+    const cd = document.createElement('div');
+    cd.className = 'chips';
+    chips.forEach(function(c) {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = c;
+      b.onclick = function() { v1PickChip(c); };
+      cd.appendChild(b);
+    });
+    wrap.appendChild(cd);
+  }
+  ms.appendChild(wrap);
+  ms.scrollTop = ms.scrollHeight;
+}
+
+function v1ShowTyping() {
+  const ms = document.getElementById('v1-messages');
+  const d = document.createElement('div');
+  d.className = 'typing-row'; d.id = 'v1typing';
+  d.innerHTML = '<div class="typing-bubble"><span></span><span></span><span></span></div>';
+  ms.appendChild(d); ms.scrollTop = ms.scrollHeight;
+}
+function v1HideTyping() { const t = document.getElementById('v1typing'); if(t) t.remove(); }
+
+function v1Say(text, chips, special) {
+  v1ShowTyping();
+  setTimeout(function() { v1HideTyping(); v1AddMsg('agent', text, chips, special); }, 500);
+}
+
+function v1PickChip(val) { v1AddMsg('user', val); v1HandleAnswer(val); }
+
+function v1Init() {
+  v1State.letterTypes = shared.letterTypes;
+  v1State.roles       = shared.roles;
+  v1AddMsg('agent', "Hello! I'm your HR Agent.\n\nI'll help you send HR letters step by step.\n\nWhich type of letter would you like to generate?", shared.letterTypes.length ? shared.letterTypes : null);
+  v1State.step = 'letterType';
+}
+
+function v1Send() {
+  const inp = document.getElementById('v1-input');
+  const val = inp.value.trim(); if (!val) return;
+  inp.value = ''; v1AddMsg('user', val); v1HandleAnswer(val);
+}
+document.getElementById('v1-input').addEventListener('keydown', function(e) { if(e.key==='Enter') v1Send(); });
+
+function v1HandleAnswer(val) {
+  if (v1State.step === 'letterType') {
+    v1State.formData['Letter Type'] = val;
+    v1State.step = 'base'; v1State.baseIndex = 0; v1AskNextBase(); return;
+  }
+  if (v1State.step === 'base') {
+    const field = V1_BASE_FLOW[v1State.baseIndex];
+    let fv = val;
+    if (field.key === 'Date' && val.toLowerCase() === 'today') fv = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+    v1State.formData[field.key] = fv;
+    v1State.baseIndex++; v1AskNextBase(); return;
+  }
+  if (v1State.step === 'extra') {
+    const field = v1State.extraFields[v1State.extraIndex];
+    v1State.formData[field.key] = val;
+
+    // Salary Hike conditional
+    if (field.key === 'Salary Hike After Probation') {
+      if (val === 'Yes') {
+        v1State.extraIndex++;
+        v1Say("Is the increment salary defined?", ['Yes','No']);
+        v1State.step = 'salary_hike_defined'; return;
+      } else {
+        // No hike — skip salary fields
+        v1State.extraIndex++;
+        v1AskNextExtra(); return;
+      }
+    }
+    v1State.extraIndex++; v1AskNextExtra(); return;
+  }
+  if (v1State.step === 'salary_hike_defined') {
+    if (val === 'Yes') {
+      v1State.step = 'extra';
+      v1Say("What is the employee's Present Salary? (e.g., 10,000/month)");
+      v1State.step = 'salary_present'; return;
+    } else {
+      // General statement
+      v1State.formData['Salary Hike Statement'] = 'Your salary will be reviewed and increased based on your performance during the probation period.';
+      v1State.step = 'extra';
+      v1AskNextExtra(); return;
+    }
+  }
+  if (v1State.step === 'salary_present') {
+    v1State.formData['Present Salary'] = val;
+    v1State.step = 'salary_final';
+    v1Say("What is the Final Salary after hike? (e.g., 15,000/month)"); return;
+  }
+  if (v1State.step === 'salary_final') {
+    v1State.formData['Final Salary'] = val;
+    v1State.formData['Salary Hike Statement'] = 'After successful completion of the probation period, your salary will be revised from ' + v1State.formData['Present Salary'] + ' to ' + val + '.';
+    v1State.step = 'extra';
+    v1AskNextExtra(); return;
+  }
+  if (v1State.step === 'restart') {
+    if (val.toLowerCase().includes('yes') || val.toLowerCase().includes('another')) {
+      v1State.formData = {}; v1State.step = 'letterType';
+      v1Say("Which type of letter would you like to generate?", v1State.letterTypes);
+    } else { v1Say("Alright! Have a great day. Refresh to start again."); }
+  }
+}
+
+function v1AskNextBase() {
+  if (v1State.baseIndex >= V1_BASE_FLOW.length) {
+    v1State.step = 'extra';
+    v1State.extraFields = V1_EXTRA_FIELDS[v1State.formData['Letter Type']] || [];
+    v1State.extraIndex = 0; v1AskNextExtra(); return;
+  }
+  const field = V1_BASE_FLOW[v1State.baseIndex];
+  v1Say(field.q, field.useRoles ? v1State.roles : null);
+}
+
+function v1AskNextExtra() {
+  if (v1State.extraIndex >= v1State.extraFields.length) {
+    v1Say("All details collected!\n\nGenerating preview, please wait...");
+    setTimeout(function() {
+      callBackend('previewLetter', { formData: v1State.formData })
+        .then(function(res) {
+          v1FormData = v1State.formData;
+          showModal(res.data);
+          v1Say("Here's your letter preview!\n\nReview it and click Confirm & Send.");
+        })
+        .catch(function(err) { v1Say("Preview failed: " + err.message, null, 'error'); });
+    }, 600);
+    return;
+  }
+  const field = v1State.extraFields[v1State.extraIndex];
+  v1Say(field.q, field.chips || null);
+}
+
+// ============================================================
+// VERSION 3 — QUICK BOT (sender details + role/letter type + bulk paste)
+// ============================================================
+let v3State = {
+  initialized: false,
+  step: 'sender',          // sender -> roleType -> waitingFields -> done
+  letterType: '',
+  role: '',
+  requiredFields: [],
+  senderDetails: null
+};
+let v3FormData = {};
+
+function v3Now() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+
+function v3AddMsg(role, content, chips, special) {
+  const ms = document.getElementById('v3-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + role;
+  let inner = '';
+  if (special === 'success') inner = '<div class="success-bubble">' + content.replace(/\n/g,'<br>') + '</div>';
+  else if (special === 'error') inner = '<div class="error-bubble">' + content.replace(/\n/g,'<br>') + '</div>';
+  else inner = '<div class="bubble">' + content.replace(/\n/g,'<br>') + '</div>';
+  inner += '<div class="msg-time">' + v3Now() + '</div>';
+  wrap.innerHTML = inner;
+  if (chips && chips.length) {
+    const cd = document.createElement('div');
+    cd.className = 'chips';
+    chips.forEach(function(c) {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = c;
+      b.onclick = function() { v3PickChip(c); };
+      cd.appendChild(b);
+    });
+    wrap.appendChild(cd);
+  }
+  ms.appendChild(wrap);
+  ms.scrollTop = ms.scrollHeight;
+}
+
+function v3ShowTyping() {
+  const ms = document.getElementById('v3-messages');
+  const d = document.createElement('div');
+  d.className = 'typing-row'; d.id = 'v3typing';
+  d.innerHTML = '<div class="typing-bubble"><span></span><span></span><span></span></div>';
+  ms.appendChild(d); ms.scrollTop = ms.scrollHeight;
+}
+function v3HideTyping() { const t = document.getElementById('v3typing'); if(t) t.remove(); }
+function v3Say(text, chips, special) {
+  v3ShowTyping();
+  setTimeout(function() { v3HideTyping(); v3AddMsg('agent', text, chips, special); }, 500);
+}
+function v3PickChip(val) { v3AddMsg('user', val); v3HandleAnswer(val); }
+
+function v3Init() {
+  v3State.initialized = true;
+  v3AddMsg('agent', "Hi! Let's get your sender details first.\n\nPlease copy the lines below, fill in your values, and paste it back:\n\nYour Name: \nYour Designation: \nCC Email (or type 'skip'): ");
+  v3State.step = 'sender_combined';
+}
+
+function v3Send() {
+  const inp = document.getElementById('v3-input');
+  const val = inp.value.trim(); if (!val) return;
+  inp.value = ''; inp.style.height = '44px';
+  v3AddMsg('user', val);
+  v3HandleAnswer(val);
+}
+function v3HandleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); v3Send(); } }
+function v3AutoResize(el) { el.style.height = '44px'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+
+function v3HandleAnswer(val) {
+
+  // ── Sender details flow (single combined message) ──
+  if (v3State.step === 'sender_combined') {
+    const parsed = v3ParseSenderTemplate(val);
+    if (!parsed.hr_name || !parsed.designation) {
+      v3Say("I couldn't find your <b>Name</b> and <b>Designation</b>. Please paste the filled template exactly as shown above.");
+      return;
+    }
+    v3State.senderDetails = parsed;
+    shared.senderDetails = parsed;
+    try { localStorage.setItem('hrSenderDetails', JSON.stringify(shared.senderDetails)); } catch(e) {}
+    v3State.step = 'letterType';
+    v3Say("Sender details saved! ✅\n\nWhich <b>Letter Type</b> would you like to generate?", shared.letterTypes);
+    return;
+  }
+
+  // ── Letter type ──
+  if (v3State.step === 'letterType') {
+    v3State.letterType = val;
+    v3State.step = 'role';
+    v3Say("Select the employee's <b>Role</b>:", shared.roles);
+    return;
+  }
+
+  // ── Role ──
+  if (v3State.step === 'role') {
+    v3State.role = val;
+    v3State.requiredFields = v3GetRequiredFields(v3State.letterType);
+    v3State.step = 'waitingFields';
+    v3Say(v3BuildTemplateMessage(), null);
+    return;
+  }
+
+  // ── Bulk field paste ──
+  if (v3State.step === 'waitingFields') {
+    const parsed = v3ParseTemplate(val, v3State.requiredFields);
+    if (!parsed['Full Name'] || !parsed['Email']) {
+      v3Say("I couldn't find <b>Full Name</b> and <b>Email</b> in your message. Please paste the filled template exactly as shown above.");
+      return;
+    }
+    v3FormData = Object.assign({
+      'Letter Type': v3State.letterType,
+      'Role': v3State.role,
+      'HR Name': v3State.senderDetails.hr_name,
+      'Designation': v3State.senderDetails.designation,
+      'CC': v3State.senderDetails.cc || ''
+    }, parsed);
+
+    // For Offer Letter with Probation — ask salary hike before preview
+    if (v3State.letterType === 'Offer Letter with Probation') {
+      v3State.step = 'v3_salary_hike';
+      v3Say("Salary Hike after Probation Period?", ['Yes', 'No']);
+      return;
+    }
+
+    v3GeneratePreview();
+    return;
+  }
+
+  // ── V3 Salary Hike flow ──
+  if (v3State.step === 'v3_salary_hike') {
+    if (val === 'Yes') {
+      v3State.step = 'v3_hike_defined';
+      v3Say("Is the increment salary defined?", ['Yes', 'No']);
+    } else {
+      v3State.step = 'waitingFields'; // reset step label
+      v3GeneratePreview();
+    }
+    return;
+  }
+  if (v3State.step === 'v3_hike_defined') {
+    if (val === 'Yes') {
+      v3State.step = 'v3_present_salary';
+      v3Say("What is the employee's Present Salary? (e.g., 10,000/month)");
+    } else {
+      v3FormData['Salary Hike Statement'] = 'Your salary will be reviewed and increased based on your performance during the probation period.';
+      v3GeneratePreview();
+    }
+    return;
+  }
+  if (v3State.step === 'v3_present_salary') {
+    v3FormData['Present Salary'] = val;
+    v3State.step = 'v3_final_salary';
+    v3Say("What is the Final Salary after hike? (e.g., 15,000/month)");
+    return;
+  }
+  if (v3State.step === 'v3_final_salary') {
+    v3FormData['Final Salary'] = val;
+    v3FormData['Salary Hike Statement'] = 'After successful completion of the probation period, your salary will be revised from ' + v3FormData['Present Salary'] + ' to ' + val + '.';
+    v3GeneratePreview();
+    return;
+  }
+
+  // ── Restart ──
+  if (v3State.step === 'restart') {
+    if (val.toLowerCase().includes('another') || val.toLowerCase().includes('yes')) {
+      v3State.step = 'letterType';
+      v3Say("Which <b>Letter Type</b> would you like to generate?", shared.letterTypes);
+    } else {
+      v3Say("Alright! Have a great day. Refresh to start again.");
+    }
+    return;
+  }
+}
+
+function v3GeneratePreview() {
+  v3Say("Got all the details! Generating preview, please wait...");
+  setTimeout(function() {
+    callBackend('previewLetter', { formData: v3FormData })
+      .then(function(res) {
+        showModal(res.data);
+        v3Say("Here's your letter preview! Review it and click <b>Confirm & Send</b>.");
+      })
+      .catch(function(err) {
+        v3Say("Preview failed: " + err.message, null, 'error');
+      });
+  }, 600);
+}
+
+// Map letter type -> required input fields (excludes Role/Letter Type/HR Name/Designation/CC which are already known)
+function v3GetRequiredFields(letterType) {
+  const base = ['Full Name', 'Email', 'Department Name', 'Start Date', 'Date'];
+  const extra = LETTER_FIELDS[letterType] || [];
+  return base.concat(extra.filter(function(f) {
+    return f !== 'Salary Hike After Probation' && f !== 'Present Salary' && f !== 'Final Salary';
+  }));
+}
+
+function v3BuildTemplateMessage() {
+  const fields = v3State.requiredFields;
+  let template = "Please copy the lines below, fill in the values after each colon, and paste it back here:\n\n";
+  fields.forEach(function(f) {
+    if (f === 'Employment Type') template += f + ' (Full-Time / Internship): \n';
+    else if (f === 'Mode') template += f + ' (Work from Home / Work from Office / Hybrid): \n';
+    else template += f + ': \n';
+  });
+  template += "\n(Keep the field names and colons exactly as shown — just add your values after each one.)";
+  return template;
+}
+
+// Parses the combined sender-details message (Your Name / Your Designation / CC Email)
+function v3ParseSenderTemplate(text) {
+  const result = { hr_name: '', designation: '', cc: '' };
+  const lines = text.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l; });
+
+  let labeledCount = 0;
+  lines.forEach(function(line) {
+    const idx = line.indexOf(':');
+    if (idx === -1) return;
+    const key = line.substring(0, idx).trim().toLowerCase();
+    const value = line.substring(idx + 1).trim();
+    if (!value) return;
+    if (key.indexOf('name') !== -1) { result.hr_name = value; labeledCount++; }
+    else if (key.indexOf('designation') !== -1) { result.designation = value; labeledCount++; }
+    else if (key.indexOf('cc') !== -1) { result.cc = value.toLowerCase() === 'skip' ? '' : value; labeledCount++; }
+  });
+
+  // Fallback: positional — line1=name, line2=designation, line3=cc
+  if (labeledCount === 0 && lines.length > 0) {
+    result.hr_name = lines[0] || '';
+    result.designation = lines[1] || '';
+    result.cc = (lines[2] && lines[2].toLowerCase() !== 'skip') ? lines[2] : '';
+  }
+
+  return result;
+}
+
+// Parses lines like "Full Name: Lavanya Reddy" into an object.
+// Falls back to positional matching (line 1 = field 1, line 2 = field 2...) if no labels found.
+
+function v3ParseTemplate(userText, fields) {
+  const result = {};
+  const lines = userText.split('\n').map(l => l.trim()).filter(l => l);
+
+  lines.forEach(function(line) {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) return;
+    const rawKey = line.substring(0, colonIdx).trim();
+    const value = line.substring(colonIdx + 1).trim();
+    const cleanKey = rawKey.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    if (cleanKey && value) {
+      result[cleanKey] = value;
+    }
+  });
+
+  // Fallback: labels lekunda values matrame iste — order batti map cheyyi
+  const filledCount = Object.keys(result).length;
+  if (filledCount < fields.length) {
+   const valueLines = lines.filter(l => {
+  const ci = l.indexOf(':');
+  return ci > 0 && l.substring(ci + 1).trim() !== '';
+});
+    if (valueLines.length === fields.length) {
+      fields.forEach(function(f, i) {
+        const cleanF = f.replace(/\s*\([^)]*\)\s*$/, '').trim();
+        if (!result[cleanF]) result[cleanF] = valueLines[i];
+      });
+    }
+  }
+
+  return result;
+}
+
+
+// ============================================================
+// BACKEND
+// ============================================================
+function callBackend(action, params) {
+  return new Promise(function(resolve, reject) {
+    var payload = JSON.stringify(Object.assign({ action: action }, params));
+    google.script.run
+      .withSuccessHandler(function(r) { if(r && r.success) resolve(r); else reject(new Error(r ? r.error : 'Unknown error')); })
+      .withFailureHandler(function(e) { reject(new Error(e.message || String(e))); })
+      .handleAgentRequest(payload);
+  });
+}
+</script>
+</body>
+</html>
