@@ -3,7 +3,7 @@
 ![Gmail API](https://img.shields.io/badge/Gmail_API-D14836?style=for-the-badge&logo=gmail&logoColor=white)
 ![Google Sheets](https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=google-sheets&logoColor=white)
 
-**AI-powered HR letter automation** — built for [Atoms Digital Solutions](https://www.linkedin.com/search/results/all/?keywords=Atoms%20Digital%20Solutions) and actively used by their HR team. Generates, personalizes, and dispatches offer letters, experience letters, and more in under 60 seconds.
+**HR Letter Automation System** — built for [Atoms Digital Solutions](https://www.linkedin.com/search/results/all/?keywords=Atoms%20Digital%20Solutions) and actively used by their HR team. Generates, personalizes, and dispatches offer letters, experience letters, and more in under 60 seconds.
 
 ---
 
@@ -11,7 +11,7 @@
 
 HR teams manually write, format, and send every letter or certificate. It's slow, repetitive, and error-prone — especially when headcount scales.
 
-**Before:** ~15 minutes per letter, frequent formatting errors, inconsistent branding  
+**Before:** ~15 minutes per letter, frequent formatting errors, inconsistent branding
 **After:** < 1 minute per letter, zero manual formatting errors, template-driven consistency
 
 ---
@@ -101,19 +101,10 @@ graph LR
 
 ---
 
-## Project Structure
-
-```
-├── Code.gs        # Backend — PDF generation, email dispatch, Drive storage
-└── Index.html     # Frontend — Chat, Form, and Quick interfaces
-```
-
----
-
 ## Built By
 
-**Mokshith Puvvada**  
-AI/ML Intern, Atoms Digital Solutions Pvt. Ltd.  
+**Mokshith Puvvada**
+AI/ML Intern, Atoms Digital Solutions Pvt. Ltd.
 B.Tech Computer Science, 2nd Year (2026 batch)
 
 ---
