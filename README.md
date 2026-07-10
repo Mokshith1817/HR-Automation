@@ -115,8 +115,7 @@ B.Tech Computer Science, 2nd Year (2026 batch)
 
 If you're building internal tools that solve real problems, I'd love to connect.
 
-[LinkedIn](https://www.linkedin.com/in/mokshith-puvvada/) · [GitHub](https://github.com/Mokshith1817/HR-Automation)
-
+[LinkedIn](https://www.linkedin.com/in/venkata-siva-sai-mokshith-puvvada-9001b130a) · [GitHub](https://github.com/Mokshith1817/HR-Automation)
 ---
 
 ## License
