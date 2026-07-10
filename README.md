@@ -1,35 +1,40 @@
 # HR-Automation
-AI-powered HR letter automation system built for Atoms Digital Solutions
-# HR Letter Automation System
-### Atoms Digital Solutions Pvt. Ltd.
+![Google Apps Script](https://img.shields.io/badge/Google_Apps_Script-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Gmail API](https://img.shields.io/badge/Gmail_API-D14836?style=for-the-badge&logo=gmail&logoColor=white)
+![Google Sheets](https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=google-sheets&logoColor=white)
 
-An AI-powered HR letter automation system that eliminates manual letter writing and sending. Built as a Google Apps Script web app integrated with Google Sheets, Gmail, and Google Drive — actively used by the HR team at Atoms Digital Solutions.
-
----
-
-## The Problem It Solved
-
-Previously, HR had to manually write, format, and send every letter or certificate individually. This was time-consuming and error-prone. This system automates the entire process — from filling employee details to generating a PDF and sending it via email — in under a minute.
+**AI-powered HR letter automation** — built for [Atoms Digital Solutions](https://www.linkedin.com/search/results/all/?keywords=Atoms%20Digital%20Solutions) and actively used by their HR team. Generates, personalizes, and dispatches offer letters, experience letters, and more in under 60 seconds.
 
 ---
 
-## Three Ways to Use It
+## The Problem
 
-| Version | Interface | Best For |
-|---|---|---|
-| Version 1 — Chat | Conversational chatbot | Step-by-step guided experience |
-| Version 2 — Form | Multi-step slide form | Structured data entry |
-| Version 3 — Quick | Paste-and-go template | Fast bulk sending |
+HR teams manually write, format, and send every letter or certificate. It's slow, repetitive, and error-prone — especially when headcount scales.
+
+**Before:** ~15 minutes per letter, frequent formatting errors, inconsistent branding  
+**After:** < 1 minute per letter, zero manual formatting errors, template-driven consistency
 
 ---
 
-## Letter Types Supported
+## What It Does
+
+A **multi-interface web app** built on Google Apps Script that lets HR choose the workflow that fits the moment:
+
+| Mode | Interface | Best When |
+|------|----------|-----------|
+| **Chat** | Conversational bot | HR prefers guided step-by-step input |
+| **Form** | Multi-step slide form | Structured data entry for complex letters |
+| **Quick** | Paste-and-go template | Fast dispatch, bulk sending, single letters |
+
+---
+
+## Supported Letter Types
 
 - Offer Letter
 - Offer Letter with Probation
 - Internship Offer Letter
 - Experience Letter
-- Reliving Letter
+- Relieving Letter
 - Termination Letter
 - Certification of Appreciation
 - Certification of Completion
@@ -38,65 +43,91 @@ Previously, HR had to manually write, format, and send every letter or certifica
 
 ---
 
-## Key Features
+## Core Features
 
-- **Auto PDF generation** — pulls from Google Docs templates, replaces placeholders, exports as PDF
+- **Auto PDF generation** — pulls from Google Docs templates, replaces `{{placeholders}}`, exports as PDF
 - **Gmail integration** — sends branded HTML emails with PDF attached automatically
-- **Google Drive storage** — organizes sent PDFs by letter type and year automatically
-- **Dynamic fields** — form fields change based on letter type selected
-- **Salary hike logic** — handles conditional probation salary hike scenarios
-- **Logs sheet** — every sent letter is logged with timestamp, status, and Drive link
-- **Beautify sheet** — one-click formatting for the data sheet with color-coded statuses
+- **Google Drive storage** — auto-organizes sent PDFs by letter type and year
+- **Dynamic fields** — form fields adapt based on selected letter type
+- **Conditional salary hike logic** — handles probation + hike scenarios automatically
+- **Auto-logging** — every sent letter is logged with timestamp, status, and Drive link
+- **One-click sheet beautify** — color-coded statuses and formatting in the data sheet
+- **Live preview** — catch errors before dispatch
 
 ---
 
 ## Tech Stack
 
-- **Google Apps Script** — backend logic and automation
-- **HTML / CSS / JavaScript** — frontend web app UI
-- **Google Sheets** — data source and logging
-- **Gmail API** — email delivery with HTML templates
-- **Google Drive API** — PDF storage and folder organization
-- **Google Docs** — letter templates with `{{placeholder}}` system
+| Layer | Tools |
+|-------|-------|
+| **Backend** | Google Apps Script |
+| **Frontend** | HTML / CSS / JavaScript |
+| **Data & Logging** | Google Sheets |
+| **Email** | Gmail API + HTML templates |
+| **Storage** | Google Drive API |
+| **Templates** | Google Docs with `{{placeholder}}` system |
+
+---
+
+## How It Works
+
+```mermaid
+graph LR
+    A[HR opens web app] --> B[Select letter type]
+    B --> C[Fill details via Chat / Form / Quick]
+    C --> D[Fetch Google Doc template]
+    D --> E[Replace placeholders]
+    E --> F[Export PDF]
+    F --> G[Send branded HTML email]
+    G --> H[Save to Drive]
+    H --> I[Log in Sheets]
+```
+
+1. Open the web app and choose a letter type
+2. Enter employee details via the interface that fits the task
+3. System fetches the matching template and fills placeholders
+4. PDF is generated, attached to a branded HTML email, and sent
+5. PDF is saved to the correct Drive folder
+6. Every action is logged with timestamp, status, and recipient
 
 ---
 
 ## Impact
 
-- **20+ letters sent** since deployment
-- Actively used by HR at Atoms Digital Solutions
-- Reduced letter sending time from ~15 minutes manual effort to under 1 minute
-- Zero formatting errors due to template-based PDF generation
+- **20+ letters** sent since deployment
+- **Actively used** by HR at [Atoms Digital Solutions](https://www.linkedin.com/search/results/all/?keywords=Atoms%20Digital%20Solutions)
+- Dispatch time: **~15 min → < 1 min** per letter
+- Zero manual formatting errors since go-live
 
 ---
 
 ## Project Structure
 
 ```
-├── Code.gs        # Backend — all logic, PDF generation, email sending, Drive storage
-└── Index.html     # Frontend — Chat, Form, and Quick versions of the UI
+├── Code.gs        # Backend — PDF generation, email dispatch, Drive storage
+└── Index.html     # Frontend — Chat, Form, and Quick interfaces
 ```
-
----
-
-## How It Works
-
-1. HR opens the web app and selects a letter type
-2. Fills in employee details via Chat, Form, or Quick paste
-3. System fetches the matching Google Doc template
-4. Replaces all `{{placeholders}}` with actual employee data
-5. Exports the filled document as a PDF
-6. Sends a branded HTML email with the PDF attached
-7. Saves the PDF to Google Drive under the correct folder
-8. Logs the action in the Logs sheet
 
 ---
 
 ## Built By
 
-**Mokshith** — AI/ML Intern, Atoms Digital Solutions Pvt. Ltd.  
-B.Tech Computer Science, 2nd Year (2026)
+**Mokshith Puvvada**  
+AI/ML Intern, Atoms Digital Solutions Pvt. Ltd.  
+B.Tech Computer Science, 2nd Year (2026 batch)
 
 ---
 
-> *Built during internship at Atoms Digital Solutions, Guntur, Andhra Pradesh.*
+> *Built during my internship at Atoms Digital Solutions, Guntur, Andhra Pradesh.*
+
+## Connect
+
+If you're building internal tools that solve real problems, I'd love to connect.
+
+[LinkedIn](https://www.linkedin.com/in/mokshith-puvvada/) · [GitHub](https://github.com/Mokshith1817/HR-Automation)
+
+---
+
+## License
+
+MIT
